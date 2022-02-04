@@ -3,15 +3,11 @@ package tasks;
 public class Subtask extends Task {
     private int epicId;
 
-    // Конструкторы ниже не учитывают имя сабтаска,т.к.он - часть эпика и его название - названия эпика.
-    public Subtask(int epicId, String description) {
-        this.epicId = epicId;
-        this.description = description;
-    }
-
-    public Subtask(int id, int epicId, String description, String status) {
+    public Subtask(Integer id, int epicId, String name, String description, String status) {
+        super(id, name, description, status);
         this.id = id;
         this.epicId = epicId;
+        this.name = name;
         this.description = description;
         this.status = status;
     }
@@ -22,10 +18,11 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return " \t\tSubTask{" +
-                "subTaskId=" + id +
-                ", subTaskDescription='" + description + '\'' +
-                ", epicStatus='" + status + '\'' +
+        return " \t\tSubtask{" +
+                "subtaskId=" + id +
+                ", subtaskName='" + name + '\'' +
+                ", subtaskDescription='" + description + '\'' +
+                ", subtaskStatus='" + status + '\'' +
                 '}';
     }
 }

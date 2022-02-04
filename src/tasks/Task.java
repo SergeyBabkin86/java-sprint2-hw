@@ -1,18 +1,10 @@
 package tasks;
 
 public class Task {
-    protected int id;
+    protected Integer id;
     protected String name;
     protected String description;
-    protected String status = "NEW";
-
-    public Task() {
-    }
-
-    public Task(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
+    protected String status;
 
     public Task(Integer id, String name, String description, String status) {
         this.id = id;
@@ -21,7 +13,7 @@ public class Task {
         this.status = status;
     }
 
-    public void setId(Integer taskId) { //!!! Возможно нужно будет удалить
+    public void setId(Integer taskId) {
         this.id = taskId;
     }
 
@@ -32,7 +24,7 @@ public class Task {
     @Override
     public String toString() {
         return "\tTask{" +
-                "taskID=" + id +
+                "taskId=" + id +
                 ", taskName='" + name + '\'' +
                 ", taskDescription='" + description + '\'' +
                 ", taskStatus='" + status + '\'' +

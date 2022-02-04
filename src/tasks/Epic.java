@@ -1,47 +1,44 @@
 package tasks;
 
-import tasks.Subtask;
-import tasks.Task;
-
 import java.util.ArrayList;
 
 public class Epic extends Task {
 
     public ArrayList<Subtask> subtasksLinked = new ArrayList<>();
 
-    /* Конструкторы ниже не учитывают описание эпика ,т.к. в него всегда включены сабтаски, которые и
-    являются описанием (без сабтаска эпик не имеет смысла). */
-    public Epic(String name) {
-        this.name = name;
-    }
-
-    public Epic(int id, String name) {
+    public Epic(Integer id, String name, String description, String status) {
+        super(id, name, description, status);
         this.id = id;
         this.name = name;
+        this.description = description;
+        this.status = status;
     }
 
     public void amendEpicStatus() { // Метод для изменения статуса эпика.
-        int subTaskDoneNew = 0;
-        int subTaskInProgressNew = 0;
+        int subtaskDone = 0;
+        int subtaskInProgress = 0;
         for (Subtask subtask : subtasksLinked) {
             if (subtask.status.equals("DONE")) {
-                subTaskDoneNew++;
+                subtaskDone++;
             } else if (subtask.status.equals("IN_PROGRESS")) {
-                subTaskInProgressNew++;
+                subtaskInProgress++;
             }
         }
-        if (subtasksLinked.size() == subTaskDoneNew) {
+        if (subtasksLinked.size() == subtaskDone) {
             status = "DONE";
-        } else if (subTaskInProgressNew > 0 || subTaskDoneNew != 0) {
+        } else if (subtaskInProgress > 0 || subtaskDone != 0) {
             status = "IN_PROGRESS";
+        } else {
+            status = "NEW";
         }
     }
 
     @Override
     public String toString() {
-        return "\tEpicTask{" +
+        return "\tEpic{" +
                 "epicId=" + id +
                 ", epicName='" + name + '\'' +
+                ", epicDescription='" + description.length() + '\'' +
                 ", epicStatus='" + status + '\'' +
                 '}';
     }
