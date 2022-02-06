@@ -16,35 +16,44 @@ public class Main {
         manager.addTask(task1);
         manager.addEpic(epic2);
         manager.addEpic(epic3);
-        manager.addSubTask(subtask4);
-        manager.addSubTask(subtask5);
-        manager.addSubTask(subtask6);
+        manager.addSubtask(subtask4);
+        manager.addSubtask(subtask5);
+        manager.addSubtask(subtask6);
         manager.addTask(task7);
 
-        System.out.println("\n2.1 Проверяем работу по получение списка всех задач.");
-        manager.printTaskList();
+        System.out.println("\n2.1 Проверяем работу метода getAllTasksList().");
+        for (Object object : manager.getAllTasksList()) {
+            System.out.println(object);
+        }
 
-        System.out.println("\n2.3 Проверяем получение по идентификатору. ID=2");
-        System.out.println(manager.getTask(2));
+        System.out.println("\n2.3 Проверяем получение по идентификатору.");
+        System.out.println(manager.getEpic(2));
+        System.out.println(manager.getTask(7));
+        System.out.println(manager.getSubtask(6));
 
-        System.out.println("\n2.5. Обновление. Изменяем один из эпиков и сабтасков и проверяем изменения");
+        System.out.println("\n2.5. Обновление. Изменяем задачу7, эпик3, сабтаск5 и проверяем внедерение изменений");
         Task revisedTask = new Task(7, "НоваяЗадача7", "НовоеОписание7", "DONE");
         manager.updateTask(revisedTask);
-        Epic revisedEpic = new Epic(3, "НовыйЭпик3", "НовоеЭпическоеОписание3", null);
+        System.out.println(manager.getTask(7));
+        Epic revisedEpic = new Epic(2, "НовыйЭпик3", "НовоеЭпическоеОписание3", null);
         manager.updateEpic(revisedEpic);
+        System.out.println(manager.getEpic(3));
         Subtask revisedSubtask = new Subtask(5, 2, "НовоеНазвание5", "НовоеОписание5", "DONE");
-        manager.updateSubTask(revisedSubtask);
-        manager.printTaskList();
+        manager.updateSubtask(revisedSubtask);
+        System.out.println(manager.getEpic(2));
+        System.out.println(manager.getEpicsSubtasks(2));
+
 
         System.out.println("\n2.6. Удаление. Удаляем эпик 3, задачу 7 и подзадачу 4 (для проверки изменения статуса)");
-        manager.deleteTask(3);
-        manager.deleteTask(4);
+        manager.deleteEpic(3);
+        manager.deleteSubtask(4);
         manager.deleteTask(7);
-        manager.printTaskList();
 
-        System.out.println("\n3.1. Получение списка всех подзадач для эпика 2. ");
-        manager.getEpicSubTasks(2);
+        // Проверяем работу по удалению
+        for (Object object : manager.getAllTasksList()) {
+            System.out.println(object);
+        }
 
-        manager.clearTaskList();
+        manager.clearTaskLists();
     }
 }

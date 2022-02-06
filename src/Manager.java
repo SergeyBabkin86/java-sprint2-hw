@@ -3,6 +3,7 @@ import tasks.Subtask;
 import tasks.Task;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Manager {
     private int id = 1; // Для присвоения ID.
@@ -11,63 +12,59 @@ public class Manager {
     HashMap<Integer, Subtask> subtaskList = new HashMap<>();
     HashMap<Integer, Epic> epicList = new HashMap<>();
 
-    public void printTaskList() { // 2.1 Получение списка всех задач.
-        if (!taskList.isEmpty()) {
-            for (Integer task : taskList.keySet()) {
-                System.out.println(taskList.get(task));
-            }
-        } else {
-            System.out.println("Список задач пуст.");
-        }
-        if (!epicList.isEmpty()) {
-            for (Integer epics : epicList.keySet()) {
-                Epic epic = epicList.get(epics);
-                System.out.println(epic);
-                for (int i = 0; i < epic.subtasksLinked.size(); i++) {
-                    System.out.println(epic.subtasksLinked.get(i));
-                }
-            }
-        } else {
-            System.out.println("Список эпиков пуст.");
-        }
+    public ArrayList<Object> getAllTasksList() { // 2.1 Получение списка всех задач.
+        ArrayList<Object> allTasksList = new ArrayList<>();
+        allTasksList.addAll(taskList.values());
+        allTasksList.addAll(epicList.values());
+        allTasksList.addAll(subtaskList.values());
+        return allTasksList;
     }
 
-    public void clearTaskList() { // 2.2 Удаление всех задач.
+    public void clearTaskLists() { // 2.2 Удаление всех задач.
         taskList.clear();
         epicList.clear();
         subtaskList.clear();
         System.out.println("Все списки задач очищены.");
     }
 
-    public Object getTask(int id) { // 2.3 Получение по идентификатору.
-        if (taskList.containsKey(id)) {
-            taskList.get(id);
-            return taskList.get(id);
-        } else if (epicList.containsKey(id)) {
-            return epicList.get(id);
-        } else if (subtaskList.containsKey(id)) {
-            return subtaskList.get(id);
-        } else {
+    public Task getTask(int id) { // 2.3.2 Получение задачи по идентификатору.
+        if (!taskList.containsKey(id)) {
             System.out.println("Задачи с ID: " + id + " не существует");
         }
-        return null;
+        return taskList.get(id);
     }
 
-    public void addEpic(Epic epic) { // 2.4.1. Создание эпика
+    public Epic getEpic(int id) { // 2.3.1 Получение эпика по идентификатору.
+        if (!epicList.containsKey(id)) {
+            System.out.println("Эпика с ID: " + id + " не существует");
+        }
+        return epicList.get(id);
+    }
+
+    public Subtask getSubtask(int id) { // 2.3.3 Получение сабтаска по идентификатору.
+        if (!subtaskList.containsKey(id)) {
+            System.out.println("Сабтаска с ID: " + id + " не существует");
+        }
+        return subtaskList.get(id);
+    }
+
+    public void addTask(Task task) { // 2.4.1. Создание таска
+        task.setId(generateNewId());
+        taskList.put(task.getId(), task);
+    }
+
+    public void addEpic(Epic epic) { // 2.4.2. Создание эпика
         epic.setId(generateNewId());
         epicList.put(epic.getId(), epic);
         epic.amendEpicStatus();
     }
 
-    public void addTask(Task task) { // 2.4.2. Создание таска
-        task.setId(generateNewId());
-        taskList.put(task.getId(), task);
-    }
-
-    public void addSubTask(Subtask subTask) { // 2.4.2. Создание сабтаска
+    public void addSubtask(Subtask subTask) { // 2.4.3. Создание сабтаска
+        int epicId = subTask.getEpicId();
         subTask.setId(generateNewId());
         subtaskList.put(subTask.getId(), subTask);
-        updateSubtaskLink(subTask.getEpicId());
+        epicList.get(epicId).subtasksLinked.add(subTask);
+        epicList.get(epicId).amendEpicStatus();
     }
 
     public void updateTask(Task task) { // 2.5.1. Обновление таска
@@ -78,55 +75,61 @@ public class Manager {
     public void updateEpic(Epic epic) { // 2.5.2. Обновление эпика
         int epicId = epic.getId();
         epicList.replace(epicId, epic);
-        updateSubtaskLink(epicId);
+        epic.subtasksLinked.addAll(getEpicsSubtasks(epicId));
+        epic.amendEpicStatus();
     }
 
-    public void updateSubTask(Subtask subTask) { // 2.5.3. Обновление сабтаска
-        int epicId = subTask.getEpicId();
-        subtaskList.replace(subTask.getId(), subTask);
-        updateSubtaskLink(epicId);
+    public void updateSubtask(Subtask subtask) { // 2.5.3. Обновление сабтаска
+        int epicId = subtask.getEpicId();
+        int indexInEpic = epicList.get(epicId).subtasksLinked.indexOf(subtask);
+        epicList.get(epicId).subtasksLinked.set(indexInEpic, subtask);
+        subtaskList.replace(subtask.getId(), subtask);
+        epicList.get(epicId).amendEpicStatus();
     }
 
-    public void deleteTask(int id) { // 2.6 Удаление по идентификатору
-        if (taskList.containsKey(id)) {
-            taskList.remove(id);
-        } else if (epicList.containsKey(id)) {
-            epicList.remove(id);
-        } else if (subtaskList.containsKey(id)) {
-            int epicId = subtaskList.get(id).getEpicId();
-            subtaskList.remove(id);
-            updateSubtaskLink(epicId);
+    public void deleteTask(int taskId) { // 2.6.1. Удаление задачи по идентификатору
+        if (taskList.containsKey(taskId)) {
+            taskList.remove(taskId);
         } else {
-            System.out.println("Задачи с ID: " + id + " не существует");
+            System.out.println("Задачи с ID: " + taskId + " не существует");
         }
     }
 
-    public void getEpicSubTasks(int epicId) { // 3.1. Получение списка всех подзадач определённого эпика.
-        System.out.println("Список задач для эпика с ID " + epicId);
-        Epic epic = epicList.get(epicId);
-        for (int i = 0; i < epic.subtasksLinked.size(); i++) {
-            System.out.println(epic.subtasksLinked.get(i));
-        }
-    }
-
-    // Метод для обновления данных в subTaskReference при внесении, изменении и удалении субтасков и эпиков.
-    private void updateSubtaskLink(int epicId) {
-        Epic epicObject = epicList.get(epicId);
-        epicObject.subtasksLinked.clear();
-        Subtask subtaskObject;
-        int id;
+    public void deleteEpic(int epicId) { // 2.6.2. Удаление эпика по идентификатору
         if (epicList.containsKey(epicId)) {
-            for (Integer subTaskKey : subtaskList.keySet()) {
-                subtaskObject = subtaskList.get(subTaskKey);
-                id = subtaskObject.getEpicId();
-                if (id == epicId) {
-                    epicObject.subtasksLinked.add(subtaskObject);
+            epicList.remove(epicId);
+            for (Integer subtaskKey : subtaskList.keySet()) { // Вместе с эпиком удаляем подзадачи
+                if (subtaskList.get(subtaskKey).getEpicId() == epicId) {
+                    subtaskList.remove(subtaskKey);
                 }
             }
         } else {
-            System.out.println("Такого эпика нет " + epicId);
+            System.out.println("Эпика с ID: " + epicId + " не существует");
         }
-        epicList.get(epicId).amendEpicStatus();
+    }
+
+    public void deleteSubtask(int subtaskId) { // 2.6.3. Удаление сабтаска по идентификатору
+        if (subtaskList.containsKey(subtaskId)) {
+            int epicId = subtaskList.get(subtaskId).getEpicId();
+            epicList.get(epicId).subtasksLinked.remove(subtaskList.get(subtaskId));
+            subtaskList.remove(subtaskId);
+            epicList.get(epicId).amendEpicStatus();
+        } else {
+            System.out.println("Сабтаска с ID: " + subtaskId + " не существует");
+        }
+    }
+
+    public ArrayList<Subtask> getEpicsSubtasks(int epicId) { // 3.1. Получение списка подзадач для эпика.
+        ArrayList<Subtask> epicsSubtasks = new ArrayList<>();
+        if (!epicList.containsKey(epicId)) {
+            System.out.println("Нет эпика с ID: " + epicId);
+        }
+        for (Subtask subtask : subtaskList.values()) {
+            if (subtask.getEpicId() == epicId) {
+                epicsSubtasks.add(subtask);
+            }
+        }
+        return epicsSubtasks;
     }
 
     private int generateNewId() {

@@ -18,13 +18,13 @@ public class Epic extends Task {
         int subtaskDone = 0;
         int subtaskInProgress = 0;
         for (Subtask subtask : subtasksLinked) {
-            if (subtask.status.equals("DONE")) {
+            if (subtask.getStatus().equals("DONE")) {
                 subtaskDone++;
-            } else if (subtask.status.equals("IN_PROGRESS")) {
+            } else if (subtask.getStatus().equals("IN_PROGRESS")) {
                 subtaskInProgress++;
             }
         }
-        if (subtasksLinked.size() == subtaskDone) {
+        if (subtasksLinked.size() == subtaskDone && !subtasksLinked.isEmpty()) {
             status = "DONE";
         } else if (subtaskInProgress > 0 || subtaskDone != 0) {
             status = "IN_PROGRESS";
