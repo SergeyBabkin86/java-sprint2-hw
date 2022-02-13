@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class Epic extends Task {
 
-    public ArrayList<Subtask> subtasksLinked = new ArrayList<>();
+    public final ArrayList<Subtask> subtasksLinked = new ArrayList<>();
 
-    public Epic(Integer id, String name, String description, String status) {
+    public Epic(Integer id, String name, String description, TaskStatus status) {
         super(id, name, description, status);
         this.id = id;
         this.name = name;
@@ -18,18 +18,18 @@ public class Epic extends Task {
         int subtaskDone = 0;
         int subtaskInProgress = 0;
         for (Subtask subtask : subtasksLinked) {
-            if (subtask.getStatus().equals("DONE")) {
+            if (TaskStatus.DONE == subtask.getStatus()) {
                 subtaskDone++;
-            } else if (subtask.getStatus().equals("IN_PROGRESS")) {
+            } else if (TaskStatus.IN_PROGRESS == subtask.getStatus()) {
                 subtaskInProgress++;
             }
         }
         if (subtasksLinked.size() == subtaskDone && !subtasksLinked.isEmpty()) {
-            status = "DONE";
+            status = TaskStatus.DONE;
         } else if (subtaskInProgress > 0 || subtaskDone != 0) {
-            status = "IN_PROGRESS";
+            status = TaskStatus.IN_PROGRESS;
         } else {
-            status = "NEW";
+            status = TaskStatus.NEW;
         }
     }
 

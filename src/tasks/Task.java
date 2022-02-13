@@ -6,9 +6,9 @@ public class Task {
     protected Integer id;
     protected String name;
     protected String description;
-    protected String status;
+    protected TaskStatus status;
 
-    public Task(Integer id, String name, String description, String status) {
+    public Task(Integer id, String name, String description, TaskStatus status) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -23,7 +23,7 @@ public class Task {
         return id;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 

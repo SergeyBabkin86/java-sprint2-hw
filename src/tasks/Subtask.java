@@ -1,9 +1,9 @@
 package tasks;
 
 public class Subtask extends Task {
-    private int epicId;
+    private final int epicId;
 
-    public Subtask(Integer id, int epicId, String name, String description, String status) {
+    public Subtask(Integer id, int epicId, String name, String description, TaskStatus status) {
         super(id, name, description, status);
         this.id = id;
         this.epicId = epicId;
