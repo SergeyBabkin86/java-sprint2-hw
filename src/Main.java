@@ -50,16 +50,18 @@ public class Main {
         System.out.println("\nИСТОРИЯ ДО УДАЛЕНИЯ:");
         manager.getTask(1);
         manager.getTask(1);
+        manager.getSubtask(5);
         manager.getTask(1);
         manager.getTask(1);
         manager.getEpic(2);
         manager.getEpic(2);
         manager.getEpic(2);
+        manager.getTask(7);
         manager.getEpic(3);
         manager.getSubtask(4);
-        manager.getSubtask(5);
         manager.getSubtask(6);
-        manager.getTask(7);
+        manager.getSubtask(5);
+        manager.getTask(1);
 
         System.out.println();
         for (Task historyTask : manager.history()) {

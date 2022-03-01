@@ -44,7 +44,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (!taskList.containsKey(id)) {
             System.out.println("Задачи с ID: " + id + " не существует");
         }
-        historyManager.addToHistory(taskList.get(id)); // Добавляем в историю
+        historyManager.add(taskList.get(id)); // Добавляем в историю
         return taskList.get(id);
     }
 
@@ -53,7 +53,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (!epicList.containsKey(id)) {
             System.out.println("Эпика с ID: " + id + " не существует");
         }
-        historyManager.addToHistory(epicList.get(id)); // Добавляем в историю
+        historyManager.add(epicList.get(id)); // Добавляем в историю
         return epicList.get(id);
     }
 
@@ -62,7 +62,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (!subtaskList.containsKey(id)) {
             System.out.println("Сабтаска с ID: " + id + " не существует");
         }
-        historyManager.addToHistory(subtaskList.get(id)); // Добавляем в историю
+        historyManager.add(subtaskList.get(id)); // Добавляем в историю
         return subtaskList.get(id);
     }
 
@@ -115,7 +115,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTask(int taskId) {
         if (taskList.containsKey(taskId)) {
             taskList.remove(taskId);
-            historyManager.deleteFromHistory(taskId); // Удаляем таск из истории
+            historyManager.remove(taskId); // Удаляем таск из истории
         } else {
             System.out.println("Задачи с ID: " + taskId + " не существует");
         }
@@ -125,11 +125,11 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteEpic(int epicId) {
         if (epicList.containsKey(epicId)) {
             epicList.remove(epicId);
-            historyManager.deleteFromHistory(epicId); // Удаляем эпик из истории
+            historyManager.remove(epicId); // Удаляем эпик из истории
             for (Integer subtaskKey : subtaskList.keySet()) {
                 if (subtaskList.get(subtaskKey).getEpicId() == epicId) {
                     subtaskList.remove(subtaskKey);
-                    historyManager.deleteFromHistory(subtaskKey); // Удаляем из истории все сабтаски, привязанные к эпику
+                    historyManager.remove(subtaskKey); // Удаляем из истории все сабтаски, привязанные к эпику
                 }
             }
         } else {
@@ -143,7 +143,7 @@ public class InMemoryTaskManager implements TaskManager {
             int epicId = subtaskList.get(subtaskId).getEpicId();
             epicList.get(epicId).subtasksLinked.remove(subtaskList.get(subtaskId));
             subtaskList.remove(subtaskId);
-            historyManager.deleteFromHistory(subtaskId);// Удаляем таск из истории
+            historyManager.remove(subtaskId);// Удаляем таск из истории
             epicList.get(epicId).amendEpicStatus();
         } else {
             System.out.println("Сабтаска с ID: " + subtaskId + " не существует");
