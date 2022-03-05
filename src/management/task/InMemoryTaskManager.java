@@ -5,10 +5,7 @@ import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private int id = 1;
@@ -124,14 +121,16 @@ public class InMemoryTaskManager implements TaskManager {
     @Override // 2.6.2. Удаление эпика по идентификатору
     public void deleteEpic(int epicId) {
         if (epicList.containsKey(epicId)) {
-            epicList.remove(epicId);
-            historyManager.remove(epicId); // Удаляем эпик из истории
+            Set<Integer> keysToRemove = new HashSet<>();
             for (Integer subtaskKey : subtaskList.keySet()) {
                 if (subtaskList.get(subtaskKey).getEpicId() == epicId) {
-                    subtaskList.remove(subtaskKey);
-                    historyManager.remove(subtaskKey); // Удаляем из истории все сабтаски, привязанные к эпику
+                    keysToRemove.add(subtaskList.get(subtaskKey).getEpicId());
+                    historyManager.remove(subtaskList.get(subtaskKey).getId());
                 }
             }
+            subtaskList.keySet().removeAll(keysToRemove);
+            epicList.remove(epicId);
+            historyManager.remove(epicId);
         } else {
             System.out.println("Эпика с ID: " + epicId + " не существует");
         }

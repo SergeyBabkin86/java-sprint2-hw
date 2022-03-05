@@ -8,11 +8,10 @@ import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    public Node<Task> first;
-    public Node<Task> last;
-    public int size = 0;
+    private Node<Task> first;
+    private Node<Task> last;
 
-    private final HashMap<Integer, Node<Task>> nodeList = new HashMap<>(); // Добавляем в хэшмапю
+    private final HashMap<Integer, Node<Task>> nodeList = new HashMap<>();
 
     void linkLast(Task task) {
         final Node<Task> last = this.last;
@@ -21,29 +20,27 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (last == null) {
             first = newNode;
         } else {
-            last.next = newNode;
+            last.setNext(newNode);
         }
-        nodeList.put(task.getId(), newNode); // Добавляем ноду в hashMap
-        size++;
+        nodeList.put(task.getId(), newNode);
     }
 
     void removeNode(Node<Task> node) {
-        final Node<Task> next = node.next;
-        final Node<Task> prev = node.prev;
+        final Node<Task> next = node.getNext();
+        final Node<Task> prev = node.getPrev();
         if (prev == null) {
             first = next;
         } else {
-            prev.next = next;
-            node.prev = null;
+            prev.setNext(next);
+            node.setPrev(null);
         }
         if (next == null) {
             last = prev;
         } else {
-            next.prev = prev;
-            node.next = null;
+            next.setPrev(prev);
+            node.setNext(null);
         }
-        node.item = null;
-        size--;
+        node.setItem(null);
     }
 
     @Override
@@ -59,6 +56,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void remove(int id) {
         Node<Task> node = nodeList.get(id);
         removeNode(node);
+        nodeList.remove(1);
     }
 
     @Override
@@ -66,8 +64,8 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node<Task> node = first;
         List<Task> nodeList = new ArrayList<>();
         while (node != null) {
-            nodeList.add(node.item);
-            node = node.next;
+            nodeList.add(node.getItem());
+            node = node.getNext();
         }
         return nodeList;
     }
