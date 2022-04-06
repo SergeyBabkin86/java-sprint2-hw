@@ -4,6 +4,7 @@ import management.history.HistoryManager;
 import management.history.InMemoryHistoryManager;
 import management.task.InMemoryTaskManager;
 import management.task.TaskManager;
+import tasks.*;
 
 public class Managers {
 
@@ -14,4 +15,5 @@ public class Managers {
     public static HistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager();
     }
+
 }

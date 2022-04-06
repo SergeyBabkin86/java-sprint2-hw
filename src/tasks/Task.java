@@ -23,18 +23,21 @@ public class Task {
         return id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     public TaskStatus getStatus() {
         return status;
     }
 
     @Override
     public String toString() {
-        return "\tTask{" +
-                "taskId=" + id +
-                ", taskName='" + name + '\'' +
-                ", taskDescription='" + description.length() + '\'' +
-                ", taskStatus='" + status + '\'' +
-                '}';
+        return id + "," + TaskType.TASK + "," + name + "," + status + "," + description + "," + " ";
     }
 
     @Override
