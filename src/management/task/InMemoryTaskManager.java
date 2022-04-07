@@ -20,8 +20,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.1 Получение списка всех задач.
-    public List<Object> getAllTasksList() {
-        List<Object> allTasksList = new ArrayList<>();
+    public List<Task> getAllTasksList() {
+        List<Task> allTasksList = new ArrayList<>();
         allTasksList.addAll(taskList.values());
         allTasksList.addAll(epicList.values());
         allTasksList.addAll(subtaskList.values());

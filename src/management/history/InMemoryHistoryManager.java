@@ -5,13 +5,14 @@ import tasks.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
     private Node<Task> first;
     private Node<Task> last;
 
-    private final HashMap<Integer, Node<Task>> nodeList = new HashMap<>();
+    private final Map<Integer, Node<Task>> nodeList = new HashMap<>();
 
     void linkLast(Task task) {
         final Node<Task> last = this.last;

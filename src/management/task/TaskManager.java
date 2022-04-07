@@ -7,7 +7,7 @@ import tasks.Task;
 import java.util.List;
 
 public interface TaskManager {
-    List<Object> getAllTasksList(); // 2.1 Получение списка всех задач.
+    List<Task> getAllTasksList(); // 2.1 Получение списка всех задач.
 
     void clearTaskLists(); // 2.2 Удаление всех задач.
 

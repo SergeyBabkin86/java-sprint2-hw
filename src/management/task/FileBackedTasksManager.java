@@ -25,7 +25,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     @Override
-    public List<Object> getAllTasksList() {
+    public List<Task> getAllTasksList() {
         return super.getAllTasksList();
     }
 
@@ -170,12 +170,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     static List<Integer> historyFromString(String value) {
-        List<Integer> l = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();
         String[] splitValue = value.split(",");
         for (String s : splitValue) {
-            l.add(Integer.parseInt(s));
+            list.add(Integer.parseInt(s));
         }
-        return l;
+        return list;
     }
 
     public static FileBackedTasksManager loadFromFile(File file) {
