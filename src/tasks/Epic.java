@@ -1,18 +1,62 @@
 package tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Epic extends Task {
+    protected final TaskType taskType = TaskType.EPIC;
+    protected LocalDateTime endTime;
 
     public final List<Subtask> subtasksLinked = new ArrayList<>();
 
-    public Epic(Integer id, String name, String description, TaskStatus status) {
-        super(id, name, description, status);
-        this.id = id;
-        this.name = name;
+    public Epic(String title, String description, TaskStatus status) {
+        super(title, description, status);
+        this.title = title;
         this.description = description;
         this.status = status;
+    }
+
+    public Epic(Integer id, String title, String description, TaskStatus status) {
+        super(id, title, description, status);
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+    }
+
+    public void setEpicTiming() {
+        if (!subtasksLinked.isEmpty()) {
+            for (Subtask subtask : subtasksLinked) {
+                if (startTime == null) {
+                    startTime = subtask.getStartTime();
+                } else {
+                    if (subtask.getStartTime() != null && startTime.isAfter(subtask.getStartTime())) {
+                        startTime = subtask.getStartTime();
+                    }
+                }
+                if (endTime == null) {
+                    endTime = subtask.getEndTime();
+                } else {
+                    if (subtask.getEndTime() != null && endTime.isBefore(subtask.getEndTime())) {
+                        endTime = subtask.getEndTime();
+                    }
+                }
+            }
+            if (endTime != null && startTime != null) {
+                duration = Duration.between(getStartTime(), getEndTime());
+            }
+        } else {
+            startTime = null;
+            duration = null;
+            endTime = null;
+        }
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public void amendEpicStatus() { // Метод для изменения статуса эпика.
@@ -36,6 +80,24 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return id + "," + TaskType.EPIC + "," + name + "," + status + "," + description + "," + " ";
+        return id + "," +
+                taskType + "," +
+                title + "," +
+                status + "," +
+                description + "," +
+                "" + "," +
+                startTime + "," +
+                duration + "," +
+                getEndTime();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

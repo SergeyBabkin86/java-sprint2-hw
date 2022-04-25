@@ -10,15 +10,15 @@ public class Main {
 
         TaskManager manager = Managers.getDefault();
 
-        Task task1 = new Task(null, "Задача1", "Описание1", TaskStatus.NEW);
-        Task task7 = new Task(null, "Задача7", "Описание7", TaskStatus.NEW);
+        Task task1 = new Task("Задача1", "Описание1", TaskStatus.NEW);
+        Task task7 = new Task("Задача7", "Описание7", TaskStatus.NEW);
 
-        Epic epic2 = new Epic(null, "Эпик2", "ЭпикОписание2", null);
-        Epic epic3 = new Epic(null, "Эпик3", "ЭпикОписание3", null);
+        Epic epic2 = new Epic("Эпик2", "ЭпикОписание2", null);
+        Epic epic3 = new Epic("Эпик3", "ЭпикОписание3", null);
 
-        Subtask subtask4 = new Subtask(null, 2, "Подзадача4", "Описание4", TaskStatus.NEW);
-        Subtask subtask5 = new Subtask(null, 2, "Подзадача5", "Описание5", TaskStatus.NEW);
-        Subtask subtask6 = new Subtask(null, 2, "Подзадача6", "Описание6", TaskStatus.NEW);
+        Subtask subtask4 = new Subtask(2, "Подзадача4", "Описание4", TaskStatus.NEW);
+        Subtask subtask5 = new Subtask(2, "Подзадача5", "Описание5", TaskStatus.NEW);
+        Subtask subtask6 = new Subtask(2, "Подзадача6", "Описание6", TaskStatus.NEW);
 
         manager.addTask(task1);
         manager.addEpic(epic2);

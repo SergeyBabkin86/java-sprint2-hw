@@ -4,10 +4,14 @@ import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface TaskManager {
     List<Task> getAllTasksList(); // 2.1 Получение списка всех задач.
+
+    Set<Task> getPrioritizedTasks(); // ФЗ-6 - Вернуть список задач и подзадач в заданном порядке
 
     void clearTaskLists(); // 2.2 Удаление всех задач.
 
@@ -17,11 +21,11 @@ public interface TaskManager {
 
     Subtask getSubtask(int id); // 2.3.3 Получение сабтаска по идентификатору.
 
-    void addTask(Task task); // 2.4.1. Создание таска
+    Integer addTask(Task task); // 2.4.1. Создание таска
 
-    void addEpic(Epic epic); // 2.4.2. Создание эпика
+    Integer addEpic(Epic epic); // 2.4.2. Создание эпика
 
-    void addSubtask(Subtask subTask); // 2.4.3. Создание сабтаска
+    Integer addSubtask(Subtask subTask); // 2.4.3. Создание сабтаска
 
     void updateTask(Task task); // 2.5.1. Обновление таска
 
@@ -40,4 +44,6 @@ public interface TaskManager {
     List<Task> history(); // Спр. 3 Получение истории
 
     int generateNewId();
+
+    boolean isTasksCrossing(LocalDateTime startTime);
 }
