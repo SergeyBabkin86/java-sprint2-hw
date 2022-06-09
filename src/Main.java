@@ -1,14 +1,26 @@
+import http.HttpTaskServer;
+import http.KVServer;
 import utilities.Managers;
 import management.task.TaskManager;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TaskStatus;
+import utilities.TaskStatus;
+
+import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        try {
+            new KVServer().start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         TaskManager manager = Managers.getDefault();
+        HttpTaskServer server = new HttpTaskServer(manager);
+        server.start();
 
         Task task1 = new Task("Задача1", "Описание1", TaskStatus.NEW);
         Task task7 = new Task("Задача7", "Описание7", TaskStatus.NEW);
@@ -87,5 +99,7 @@ public class Main {
         for (Task historyTask : manager.history()) {
             System.out.println(historyTask);
         }
+
+        //server.stop();
     }
 }

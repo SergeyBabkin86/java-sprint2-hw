@@ -8,6 +8,6 @@ public class inMemoryTaskManagerTest extends TaskManagerTest {
     @BeforeEach
     @Override
     public void initializeManager() {
-        manager = Managers.getDefault();
+        manager = Managers.getDefault1();
     }
 }

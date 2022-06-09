@@ -5,6 +5,7 @@ import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -51,42 +52,43 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.3.1 Получение задачи по идентификатору.
-    public Task getTask(int id) {
-        if (!taskList.containsKey(id)) {
-            System.out.println("Задачи с ID: " + id + " не существует");
-            return null;
+    public Task getTask(int id) throws IOException {
+        if (taskList.containsKey(id)) {
+            historyManager.add(taskList.get(id)); // Добавляем в историю
+            return taskList.get(id);
+        } else {
+            throw new IOException(String.format("Задачи с ID: %s не существует", id));
         }
-        historyManager.add(taskList.get(id)); // Добавляем в историю
-        return taskList.get(id);
     }
 
     @Override // 2.3.2 Получение эпика по идентификатору.
-    public Epic getEpic(int id) {
-        if (!epicList.containsKey(id)) {
-            System.out.println("Эпика с ID: " + id + " не существует");
-            return null;
+    public Epic getEpic(int id) throws IOException {
+        if (epicList.containsKey(id)) {
+            historyManager.add(epicList.get(id)); // Добавляем в историю
+            return epicList.get(id);
+        } else {
+            throw new IOException(String.format("Эпика с ID: %s не существует", id));
         }
-        historyManager.add(epicList.get(id)); // Добавляем в историю
-        return epicList.get(id);
     }
 
     @Override // 2.3.3 Получение сабтаска по идентификатору.
-    public Subtask getSubtask(int id) {
-        if (!subtaskList.containsKey(id)) {
-            System.out.println("Сабтаска с ID: " + id + " не существует");
-            return null;
+    public Subtask getSubtask(int id) throws IOException {
+        if (subtaskList.containsKey(id)) {
+            historyManager.add(subtaskList.get(id)); // Добавляем в историю
+            return subtaskList.get(id);
         }
-        historyManager.add(subtaskList.get(id)); // Добавляем в историю
-        return subtaskList.get(id);
+        throw new IOException(String.format("Сабтаска с ID: %s не существует", id));
     }
 
     @Override // 2.4.1. Создание таска
-    public Integer addTask(Task task) {
+    public Integer addTask(Task task) throws IOException {
         if (task.getId() == null) {
             task.setId(generateNewId());
-        } else if (taskList.containsKey(task.getId())) {
-            System.out.printf("Перечень уже содержит Task с ID: %s", task.getId());
-            return null;
+        } else {
+            if (taskList.containsKey(task.getId())) {
+                throw new IOException(String.format("Невозможно добавить задачу. " +
+                        "Задача с ID: %s уже существует", task.getId()));
+            }
         }
         if (isTasksCrossing(task.getStartTime())) {
             task.setStartTime(null);
@@ -97,26 +99,32 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.4.2. Создание эпика
-    public Integer addEpic(Epic epic) {
+    public Integer addEpic(Epic epic) throws IOException {
         if (epic.getId() == null) {
             epic.setId(generateNewId());
-        } else if (epicList.containsKey(epic.getId())) {
-            System.out.printf("Перечень уже содержит Epic с ID: %s", epic.getId());
-            return null;
+        } else {
+            if (epicList.containsKey(epic.getId())) {
+                throw new IOException(String.format("Невозможно добавить эпик. " +
+                        "Эпик с ID: %s уже существует", epic.getId()));
+            }
         }
         epicList.put(epic.getId(), epic);
+        epicList.get(epic.getId()).subtasksLinked.clear();
+        epic.subtasksLinked.addAll(getEpicsSubtasks(epic.getId()));
         epic.amendEpicStatus();
         epic.setEpicTiming();
         return epic.getId();
     }
 
     @Override // 2.4.3. Создание сабтаска
-    public Integer addSubtask(Subtask subtask) {
+    public Integer addSubtask(Subtask subtask) throws IOException {
         if (subtask.getId() == null) {
             subtask.setId(generateNewId());
-        } else if (subtaskList.containsKey(subtask.getId())) {
-            System.out.printf("Перечень уже содержит Subtask с ID: %s", subtask.getId());
-            return null;
+        } else {
+            if (subtaskList.containsKey(subtask.getId())) {
+                throw new IOException(String.format("Невозможно добавить подзадачу. " +
+                        "Подзадача с ID: %s уже существует", subtask.getId()));
+            }
         }
         if (isTasksCrossing(subtask.getStartTime())) {
             subtask.setStartTime(null);
@@ -131,10 +139,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.5.1. Обновление таска
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws IOException {
         if (task.getId() == null || !taskList.containsKey(task.getId())) {
-            System.out.println("Невозможно обновить task (не указан ID или такой task отсутсвует)");
-            return;
+            throw new IOException("Невозможно обновить задачу: не указан ID || задача отсутствует.");
         }
         if (isTasksCrossing(task.getStartTime())) {
             task.setStartTime(null);
@@ -144,10 +151,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.5.2. Обновление эпика
-    public void updateEpic(Epic epic) {
+    public void updateEpic(Epic epic) throws IOException {
         if (epic.getId() == null || !epicList.containsKey(epic.getId())) {
-            System.out.println("Невозможно обновить epic (не указан ID или такой epic отсутсвует)");
-            return;
+            throw new IOException("Невозможно обновить эпик: не указан ID || эпик отсутствует.");
         }
         epicList.put(epic.getId(), epic);
         epicList.get(epic.getId()).subtasksLinked.clear();
@@ -157,10 +163,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.5.3. Обновление сабтаска
-    public void updateSubtask(Subtask subtask) {
+    public void updateSubtask(Subtask subtask) throws IOException {
         if (subtask.getId() == null || !subtaskList.containsKey(subtask.getId())) {
-            System.out.println("Невозможно обновить subtask (не указан ID или такой subtask отсутсвует)");
-            return;
+            throw new IOException("Невозможно обновить подзадачу: не указан ID || подзадача отсутствует.");
         }
         if (isTasksCrossing(subtask.getStartTime())) {
             subtask.setStartTime(null);
@@ -175,52 +180,50 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override // 2.6.1. Удаление задачи по идентификатору
-    public void deleteTask(int taskId) {
-        if (taskList.containsKey(taskId)) {
-            taskList.remove(taskId);
-            historyManager.remove(taskId); // Удаляем таск из истории
-        } else {
-            System.out.println("Задачи с ID: " + taskId + " не существует");
+    public void deleteTask(int taskId) throws IOException {
+        if (!taskList.containsKey(taskId)) {
+            throw new IOException(String.format("Задачи с ID: %s не существует", taskId));
         }
+        taskList.remove(taskId);
+        historyManager.remove(taskId);
     }
 
     @Override // 2.6.2. Удаление эпика по идентификатору
-    public void deleteEpic(int epicId) {
+    public void deleteEpic(int epicId) throws IOException {
         Set<Integer> keysToRemove = new HashSet<>();
-        if (epicList.containsKey(epicId)) {
-            for (Integer subtaskKey : subtaskList.keySet()) {
-                if (subtaskList.get(subtaskKey).getEpicId() == epicId) {
-                    keysToRemove.add(subtaskList.get(subtaskKey).getId());
-                    historyManager.remove(subtaskList.get(subtaskKey).getId());
-                }
-            }
-            subtaskList.keySet().removeAll(keysToRemove);
-            epicList.remove(epicId);
-            historyManager.remove(epicId);
-        } else {
-            System.out.println("Эпика с ID: " + epicId + " не существует");
+        if (!epicList.containsKey(epicId)) {
+            throw new IOException(String.format("Эпика с ID: %s не существует", epicId));
         }
+        for (Integer subtaskKey : subtaskList.keySet()) {
+            if (subtaskList.get(subtaskKey).getEpicId() == epicId) {
+                keysToRemove.add(subtaskList.get(subtaskKey).getId());
+                historyManager.remove(subtaskList.get(subtaskKey).getId());
+            }
+        }
+        subtaskList.keySet().removeAll(keysToRemove);
+        epicList.remove(epicId);
+        historyManager.remove(epicId);
     }
 
     @Override // 2.6.3. Удаление сабтаска по идентификатору
-    public void deleteSubtask(int subtaskId) {
-        if (subtaskList.containsKey(subtaskId)) {
-            int epicId = subtaskList.get(subtaskId).getEpicId();
-            epicList.get(epicId).subtasksLinked.remove(subtaskList.get(subtaskId));
-            subtaskList.remove(subtaskId);
-            epicList.get(epicId).amendEpicStatus();
-            epicList.get(epicId).setEpicTiming();
-            historyManager.remove(subtaskId); // Удаляем таск из истории
-        } else {
-            System.out.println("Сабтаска с ID: " + subtaskId + " не существует");
+    public void deleteSubtask(int subtaskId) throws IOException {
+        if (!subtaskList.containsKey(subtaskId)) {
+            throw new IOException(String.format("Подзадачи с ID: %s не существует", subtaskId));
         }
+        int epicId = subtaskList.get(subtaskId).getEpicId();
+        epicList.get(epicId).subtasksLinked.remove(subtaskList.get(subtaskId));
+        subtaskList.remove(subtaskId);
+        epicList.get(epicId).amendEpicStatus();
+        epicList.get(epicId).setEpicTiming();
+        historyManager.remove(subtaskId);
     }
 
     @Override // 3.1. Получение списка подзадач для эпика.
-    public List<Subtask> getEpicsSubtasks(int epicId) {
+    public List<Subtask> getEpicsSubtasks(int epicId) throws IOException {
         List<Subtask> epicsSubtasks = new ArrayList<>();
         if (!epicList.containsKey(epicId)) {
-            System.out.println("Нет эпика с ID: " + epicId);
+            throw new IOException(String.format("Невозможно получить перечень подзадач, " +
+                    "т.к. эпик с ID: %s не существует.", epicId));
         }
         for (Subtask subtask : subtaskList.values()) {
             if (subtask.getEpicId() == epicId) {
@@ -232,6 +235,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int generateNewId() {
+        for (Task task : getAllTasksList()) {
+            if (task.getId() > this.id) {
+                this.id = task.getId() + 1;
+            }
+        }
         return this.id++;
     }
 
@@ -253,8 +261,8 @@ public class InMemoryTaskManager implements TaskManager {
         }
         if (!crossingTasksList.isEmpty()) {
             for (Task taskCross : crossingTasksList)
-                System.out.printf("Устновленное время выполнения задачи: %s " +
-                                "пересекатеся со временем выполнения задачи c ID: %s (%s - %s)\n",
+                System.out.printf("Установленное время выполнения задачи: %s " +
+                                "пересекается со временем выполнения задачи c ID: %s (%s - %s)\n",
                         startTime, taskCross.getId(),
                         taskCross.getStartTime(), taskCross.getEndTime());
             flag = true;

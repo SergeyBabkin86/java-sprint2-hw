@@ -1,5 +1,8 @@
 package tasks;
 
+import utilities.TaskStatus;
+import utilities.TaskType;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -12,6 +15,7 @@ public class Task {
     protected TaskStatus status;
     protected LocalDateTime startTime;
     protected Duration duration;
+
 
     public Task(String title, String description, TaskStatus status) {
         this.title = title;
@@ -38,8 +42,20 @@ public class Task {
         this.duration = duration;
     }
 
+    public TaskType getTaskType() {
+        return taskType;
+    }
+
     public Integer getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public TaskStatus getStatus() {

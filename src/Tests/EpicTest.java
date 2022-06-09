@@ -7,9 +7,10 @@ import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TaskStatus;
+import utilities.TaskStatus;
 import utilities.Managers;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -19,8 +20,8 @@ class EpicTest {
     private Epic testEpic;
 
     @BeforeEach
-    public void createManagerAndEpic() {
-        manager = Managers.getDefault();
+    public void createManagerAndEpic() throws IOException {
+        manager = Managers.getDefault1();
         Integer epicId = null;
         this.manager.addEpic(new Epic("Test", "TestEpic", null));
         for (Task epic : manager.getAllTasksList()) { // Получаем id эпика (т.к. может быть присвоен любой)
@@ -41,36 +42,36 @@ class EpicTest {
 
     /* b. Все подзадачи со статусом NEW. */
     @Test
-    public void shouldReturnNewWhenAllSubtasksAreNew() {
+    public void shouldReturnNewWhenAllSubtasksAreNew() throws IOException {
         generateSubtaskStatusCases(TaskStatus.NEW);
         Assertions.assertEquals(TaskStatus.NEW, testEpic.getStatus());
     }
 
     /* c. Все подзадачи со статусом DONE. */
     @Test
-    public void shouldReturnNewWhenAllSubtasksAreDone() {
+    public void shouldReturnNewWhenAllSubtasksAreDone() throws IOException {
         generateSubtaskStatusCases(TaskStatus.DONE);
         Assertions.assertEquals(TaskStatus.DONE, testEpic.getStatus());
     }
 
     /* d. Подзадачи со статусами NEW и DONE. */
     @Test
-    public void shouldReturnNewWhenSubtasksAreNewOfDone() {
+    public void shouldReturnNewWhenSubtasksAreNewOfDone() throws IOException {
         addAnyRandomSubtasks();
         Assertions.assertEquals(TaskStatus.IN_PROGRESS, testEpic.getStatus());
     }
 
     /* e. Подзадачи со статусом IN_PROGRESS. */
     @Test
-    public void shouldReturnNewWhenAllSubtasksAreInProgress() {
+    public void shouldReturnNewWhenAllSubtasksAreInProgress() throws IOException {
         generateSubtaskStatusCases(TaskStatus.IN_PROGRESS);
         Assertions.assertEquals(TaskStatus.IN_PROGRESS, testEpic.getStatus());
     }
 
     /* ТЕСТЫ НА ВРЕМЯ
-     * d. Для всех подзадач установлено вермя */
+     * d. Для всех подзадач установлено время */
     @Test
-    public void shouldReturnStartAndEndWhenSubtaskWithTime() {
+    public void shouldReturnStartAndEndWhenSubtaskWithTime() throws IOException {
         Subtask testSubtask1 = new Subtask(testEpic.getId(), "TSbtT1", "D1", TaskStatus.NEW);
         testSubtask1.setStartTime(LocalDateTime.of(2022, 4, 16, 13, 45));
         testSubtask1.setDuration(Duration.ofHours(10));
@@ -96,16 +97,16 @@ class EpicTest {
 
     /* е. Для всех подзадач не установлено время */
     @Test
-    public void shouldReturnStartAndEndWhenSubtaskWithoutTime() {
-        addAnyRandomSubtasks(); // Добавляем сабтаски, но не устанавливаем для них время и продолжительность
+    public void shouldReturnStartAndEndWhenSubtaskWithoutTime() throws IOException {
+        addAnyRandomSubtasks(); // Добавляем подзадачи, но не устанавливаем для них время и продолжительность
         Assertions.assertNull(testEpic.getStartTime());
         Assertions.assertNull(testEpic.getEndTime());
         Assertions.assertNull(testEpic.getDuration());
     }
 
-    /* f. Для некоторых подзадач установлено вермя */
+    /* f. Для некоторых подзадач установлено время */
     @Test
-    public void shouldReturnStartAndEndWhenAnySubtaskWithTime() {
+    public void shouldReturnStartAndEndWhenAnySubtaskWithTime() throws IOException {
         Subtask testSubtask1 = new Subtask(testEpic.getId(), "TSbt1", "D1", TaskStatus.NEW);
         testSubtask1.setStartTime(LocalDateTime.of(2022, 4, 16, 13, 45));
         testSubtask1.setDuration(Duration.ofHours(10));
@@ -128,11 +129,10 @@ class EpicTest {
     }
 
     @Test
-    public void shouldReturnStartAndEndWhenSubtaskUpdate() {
+    public void shouldReturnStartAndEndWhenSubtaskUpdate() throws IOException {
         Subtask testSubtask1 = new Subtask(testEpic.getId(), "TSbt1", "D1", TaskStatus.NEW);
         testSubtask1.setStartTime(LocalDateTime.of(2022, 4, 16, 13, 45));
         testSubtask1.setDuration(Duration.ofHours(10));
-
 
         Subtask testSubtask3 = new Subtask(testEpic.getId(), "TSbt3", "D3", TaskStatus.NEW);
         testSubtask3.setStartTime(LocalDateTime.of(2022, 4, 18, 13, 45));
@@ -148,9 +148,8 @@ class EpicTest {
                 testEpic.getDuration());
     }
 
-
     /* ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ */
-    private void generateSubtaskStatusCases(TaskStatus taskStatus) {
+    private void generateSubtaskStatusCases(TaskStatus taskStatus) throws IOException {
         switch (taskStatus) {
             case NEW:
                 manager.addSubtask(new Subtask(testEpic.getId(), "TestSbt1",
@@ -183,7 +182,7 @@ class EpicTest {
         }
     }
 
-    public void addAnyRandomSubtasks() {
+    public void addAnyRandomSubtasks() throws IOException {
         Subtask testSubtask1 = new Subtask(testEpic.getId(), "TSbt1", "D1", TaskStatus.NEW);
         Subtask testSubtask2 = new Subtask(testEpic.getId(), "TSbt2", "D2", TaskStatus.DONE);
         Subtask testSubtask3 = new Subtask(testEpic.getId(), "TSbt3", "D3", TaskStatus.NEW);

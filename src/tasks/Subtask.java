@@ -1,5 +1,8 @@
 package tasks;
 
+import utilities.TaskStatus;
+import utilities.TaskType;
+
 import java.util.Objects;
 
 public class Subtask extends Task {

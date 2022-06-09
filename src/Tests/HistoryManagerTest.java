@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TaskStatus;
+import utilities.TaskStatus;
 import utilities.Managers;
 
 import java.util.List;
@@ -50,7 +50,7 @@ public class HistoryManagerTest {
         assertEquals(2, returnedHistoryList2.indexOf(subtask), "Задача на последнем месте списка");
     }
 
-    // 2. Удаление элемената
+    // 2. Удаление элемента
     // а) Удаление первого элемента
     @Test
     public void shouldRemoveFirstElement() {

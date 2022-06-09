@@ -3,15 +3,18 @@ package Tests;
 import management.task.TaskManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tasks.*;
+import tasks.Epic;
+import tasks.Subtask;
+import tasks.Task;
+import utilities.TaskStatus;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 abstract public class TaskManagerTest<T extends TaskManager> {
 
@@ -22,7 +25,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // 2.1 Получение списка всех задач.
     @Test
-    public void shouldReturnTaskList() {
+    public void shouldReturnTaskList() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
@@ -44,7 +47,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void shouldReturnPrioritizedTasks() {
+    public void shouldReturnPrioritizedTasks() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         manager.addTask(task);
 
@@ -85,7 +88,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // 2.2 Удаление всех задач.
     @Test
-    public void shouldReturnNullIfAllTaskCleared() {
+    public void shouldReturnNullIfAllTaskCleared() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
@@ -108,15 +111,21 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         manager.clearTaskLists();
         List<Task> taskList1 = manager.getAllTasksList();
         assertTrue(taskList1.isEmpty(), "TaskList is notEmpty");
-        assertNull(manager.getTask(taskId), "Task was not deleted");
-        assertNull(manager.getEpic(epicId), "Task was not deleted");
-        assertNull(manager.getSubtask(subtaskId), "Task was not deleted");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.getTask(taskId));
+        assertEquals(String.format("Задачи с ID: %s не существует", taskId), ex.getMessage());
+
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getEpic(epicId));
+        assertEquals(String.format("Эпика с ID: %s не существует", 2), ex1.getMessage());
+
+        IOException ex3 = assertThrows(IOException.class, () -> manager.getSubtask(subtaskId));
+        assertEquals(String.format("Сабтаска с ID: %s не существует", subtaskId), ex3.getMessage());
     }
 
     // 2.3.1 Получение задачи по идентификатору.
     // а) Стандартные условия (Id корректный)
     @Test
-    public void shouldReturnTask() {
+    public void shouldReturnTask() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
@@ -130,25 +139,27 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Не верный Id (таска нет в списке)
     @Test
-    public void shouldNotReturnTask() {
+    public void shouldNotReturnTask() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         manager.addTask(task);
 
-        assertNull(manager.getTask(2), "Task is not null");
+        IOException ex = assertThrows(IOException.class, () -> manager.getTask(2));
+        assertEquals(String.format("Задачи с ID: %s не существует", 2), ex.getMessage());
+
         assertTrue(manager.history().isEmpty(), "History is not empty"); // Добавился ли в историю?
     }
 
     // 2.3.2 Получение Epic по идентификатору.
     // а) Стандартные условия (Id корректный)
     @Test
-    public void shouldReturnEpic() {
+    public void shouldReturnEpic() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
 
         Epic returnedEpic = manager.getEpic(epicId);
         assertNotNull(returnedEpic, "Epic is null");
-        assertEquals(returnedEpic, savedEpic, "Epic are not equal");
+        assertEquals(returnedEpic, savedEpic, "Epics are not equal");
 
         assertTrue(manager.history().contains(savedEpic),
                 "Object was not added to history"); //Добавился ли в историю?
@@ -156,18 +167,20 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Не верный Id (Epic нет в списке)
     @Test
-    public void shouldNotReturnEpic() {
+    public void shouldNotReturnEpic() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         manager.addEpic(epic);
 
-        assertNull(manager.getEpic(2), "Epic is not null");
+        IOException ex = assertThrows(IOException.class, () -> manager.getEpic(2));
+        assertEquals(String.format("Эпика с ID: %s не существует", 2), ex.getMessage());
+
         assertTrue(manager.history().isEmpty(), "History is not empty"); // Добавился ли в историю?
     }
 
     // 2.3.3 Получение Subtask по идентификатору.
     // а) Стандартные условия (Id корректный)
     @Test
-    public void shouldReturnSubtask() {
+    public void shouldReturnSubtask() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -186,23 +199,25 @@ abstract public class TaskManagerTest<T extends TaskManager> {
                 "Subtask was not added to history"); //Добавился ли в историю?
     }
 
-    // b) Не верный Id (Epic нет в списке)
+    // b) Не верный Id (Subtask нет в списке)
     @Test
-    public void shouldNotReturnSubtask() {
+    public void shouldNotReturnSubtask() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
 
         Subtask subtask = new Subtask(2, epicId, "TestSubtask", "Description", TaskStatus.NEW);
         manager.addSubtask(subtask);
 
-        assertNull(manager.getSubtask(3), "Subtask is not null");
+        IOException ex = assertThrows(IOException.class, () -> manager.getSubtask(3));
+        assertEquals(String.format("Сабтаска с ID: %s не существует", 3), ex.getMessage());
+
         assertTrue(manager.history().isEmpty(), "History is not empty"); // Добавился ли в историю?
     }
 
     // 2.4.1 Создание Task
     // a) Создание Task (нет других Task в списке)
     @Test
-    public void shouldAddTaskIfNoAnotherTasks() {
+    public void shouldAddTaskIfNoAnotherTasks() throws IOException {
         Task testTask = new Task("TestTask", "TestDescription", TaskStatus.NEW);
         final int taskId = manager.addTask(testTask);
         final Task savedTask = manager.getTask(taskId);
@@ -219,7 +234,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Создание Task (Есть другие Task в списке)
     @Test
-    public void shouldAddTaskIfAnotherTasksArePresent() {
+    public void shouldAddTaskIfAnotherTasksArePresent() throws IOException {
         Task testTask = new Task("TestTask", "Description", TaskStatus.NEW);
         manager.addTask(testTask);
 
@@ -238,14 +253,17 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(testTask1, tasksList.get(1), "Task не совпадают.");
     }
 
-    // c) Создание Task (попытка добавть Task с существующим Id)
+    // c) Создание Task (попытка добавить Task с существующим Id)
     @Test
-    public void shouldNotAddTaskWithSameId() {
+    public void shouldNotAddTaskWithSameId() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         manager.addTask(task);
 
         Task task1 = new Task(1, "TestTask1", "Description", TaskStatus.IN_PROGRESS);
-        assertNull(manager.addTask(task1), "Task is added");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.addTask(task1));
+        assertEquals(String.format("Невозможно добавить задачу. " +
+                "Задача с ID: %s уже существует", task1.getId()), ex.getMessage());
 
         final List<Task> tasksList = manager.getAllTasksList();
 
@@ -257,7 +275,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     // 2.4.2 Создание Epic
     // a) Создание Epic (нет других Epic в списке)
     @Test
-    public void shouldAddEpicIfNoAnotherTasks() {
+    public void shouldAddEpicIfNoAnotherTasks() throws IOException {
         Epic epic = new Epic("TestEpic", "TestDescription1", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -274,7 +292,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Создание Epic (Есть другие Epic в списке)
     @Test
-    public void shouldAddEpicIfAnotherEpicsArePresent() {
+    public void shouldAddEpicIfAnotherEpicsArePresent() throws IOException {
         Epic epic = new Epic("TestEpic", "Description", null);
         manager.addEpic(epic);
 
@@ -293,14 +311,17 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(epic1, epicList.get(1), "Epic не совпадают.");
     }
 
-    // c) Создание Epic (попытка добавть Epic с существующим Id)
+    // c) Создание Epic (попытка добавить Epic с существующим Id)
     @Test
-    public void shouldNotAddEpicWithSameId() {
+    public void shouldNotAddEpicWithSameId() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         manager.addEpic(epic);
 
         Epic epic1 = new Epic(1, "TestEpic1", "Description", null);
-        assertNull(manager.addEpic(epic1), "Epic is added");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.addEpic(epic1));
+        assertEquals(String.format("Невозможно добавить эпик. " +
+                "Эпик с ID: %s уже существует", epic1.getId()), ex.getMessage());
 
         final List<Task> epicList = manager.getAllTasksList();
 
@@ -312,7 +333,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     // 2.4.3. Создание Subtask
     // a) Создание Subtask (нет других Subtask в списке)
     @Test
-    public void shouldAddSubtaskIfNoAnotherSubtasks() {
+    public void shouldAddSubtaskIfNoAnotherSubtasks() throws IOException {
         Epic epic = new Epic("TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -336,7 +357,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Создание Subtask (Есть другие Subtask в списке)
     @Test
-    public void shouldAddSubtaskIfAnotherSubtasksArePresent() {
+    public void shouldAddSubtaskIfAnotherSubtasksArePresent() throws IOException {
         Epic epic = new Epic("TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -357,9 +378,9 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(savedSubtask, subtaskAndEpicList.get(1), "Subtask нет в списке.");
     }
 
-    // c) Создание Subtask (попытка добавть Subtask с существующим Id)
+    // c) Создание Subtask (попытка добавить Subtask с существующим Id)
     @Test
-    public void shouldNotAddSubtaskWithSameId() {
+    public void shouldNotAddSubtaskWithSameId() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -370,7 +391,10 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         manager.addSubtask(subtask);
 
         Subtask subtask1 = new Subtask(2, epicId, "TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
-        assertNull(manager.addSubtask(subtask1), "Subtask is added");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.addSubtask(subtask1));
+        assertEquals(String.format("Невозможно добавить подзадачу. " +
+                "Подзадача с ID: %s уже существует", subtask1.getId()), ex.getMessage());
 
         final List<Task> subtaskAndEpicList = manager.getAllTasksList();
 
@@ -381,7 +405,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // d) Проверка изменения статуса и времени Epic при добавлении Subtask
     @Test
-    public void shouldChangeEpicStatus() {
+    public void shouldChangeEpicStatus() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -395,7 +419,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // e) Проверка времени Epic при добавлении Subtask
     @Test
-    public void shouldChangeEpicTime() {
+    public void shouldChangeEpicTime() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -421,7 +445,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // e) Проверка наличия Epic, привязанного к Subtask;
     @Test
-    public void shouldReturnEpicLinkedToSubtask() {
+    public void shouldReturnEpicLinkedToSubtask() throws IOException {
         final int epicId = manager.addEpic(new Epic("TestEpic", "Description", null));
         final Epic savedEpic = manager.getEpic(epicId);
         assertNotNull(savedEpic, "Epic не найден.");
@@ -438,7 +462,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     // 2.5.1 Обновление Tas
     // a) Обновление Task (нормальные условия)
     @Test
-    public void shouldUpdateTask() {
+    public void shouldUpdateTask() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
@@ -453,23 +477,28 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Обновление task (task нет в списке или у task нет Id)
     @Test
-    public void shouldNotUpdateTaskWithoutIdOrNotExistTask() {
+    public void shouldNotUpdateTaskWithoutIdOrNotExistTask() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
 
         // 1. Попытка обновить Task без указания Id
         Task task1 = new Task("TestTask1", "Description", TaskStatus.IN_PROGRESS);
-        manager.updateTask(task1);
         assertEquals(savedTask, manager.getTask(taskId), "Задачи не равны");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.updateTask(task1));
+        assertEquals("Невозможно обновить задачу: не указан ID || задача отсутствует.", ex.getMessage());
 
         List<Task> tasksList = manager.getAllTasksList();
         assertEquals(1, tasksList.size(), "Неверное количество задач.");
 
         // 2. Попытка обновить не существующий Task (нет такого Id)
         Task task2 = new Task(3, "TestTask2", "Description", TaskStatus.NEW);
-        manager.updateTask(task2);
-        assertNull(manager.getTask(3), "Задача возвращается");
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getTask(3));
+        assertEquals(String.format("Задачи с ID: %s не существует", 3), ex1.getMessage());
+
+        IOException ex2 = assertThrows(IOException.class, () -> manager.updateTask(task2));
+        assertEquals("Невозможно обновить задачу: не указан ID || задача отсутствует.", ex2.getMessage());
 
         List<Task> tasksList1 = manager.getAllTasksList();
         assertEquals(1, tasksList1.size(), "Неверное количество задач.");
@@ -478,7 +507,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     // 2.5.2 Обновление Epic
     // a1) Нормальные условия (нет привязанных Subtask)
     @Test
-    public void shouldUpdateEpic() {
+    public void shouldUpdateEpic() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -493,7 +522,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // a2. есть привязанные подзадачи
     @Test
-    public void shouldUpdateEpicWithLinkedSubtasks() {
+    public void shouldUpdateEpicWithLinkedSubtasks() throws IOException {
         Epic epic = new Epic(1, "TestEpic1", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -519,23 +548,28 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Обновление Epic (Epic нет в списке или у Epic нет Id)
     @Test
-    public void shouldNotUpdateEpicWithoutIdOrNotExistEpic() {
+    public void shouldNotUpdateEpicWithoutIdOrNotExistEpic() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
 
         // 1. Попытка обновить Epic без указания Id
         Epic epic1 = new Epic("TestEpic1", "Description", null);
-        manager.updateEpic(epic1);
         assertEquals(savedEpic, manager.getEpic(epicId), "Epic не равны");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.updateEpic(epic1));
+        assertEquals("Невозможно обновить эпик: не указан ID || эпик отсутствует.", ex.getMessage());
 
         List<Task> epicList = manager.getAllTasksList();
         assertEquals(1, epicList.size(), "Неверное количество Epic.");
 
         // 2. Попытка обновить не существующую задачу (нет такого Id)
         Epic epic2 = new Epic(3, "TestEpic2", "Description", TaskStatus.NEW);
-        manager.updateEpic(epic2);
-        assertNull(manager.getEpic(3), "Epic возвращается");
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getEpic(3));
+        assertEquals(String.format("Эпика с ID: %s не существует", 3), ex1.getMessage());
+
+        IOException ex2 = assertThrows(IOException.class, () -> manager.updateEpic(epic2));
+        assertEquals("Невозможно обновить эпик: не указан ID || эпик отсутствует.", ex2.getMessage());
 
         List<Task> tasksList1 = manager.getAllTasksList();
         assertEquals(1, tasksList1.size(), "Неверное количество Epic.");
@@ -544,7 +578,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     // 2.5.3 Обновление Subtask
     // a) Нормальные условия
     @Test
-    public void shouldUpdateSubtask() {
+    public void shouldUpdateSubtask() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
 
@@ -563,7 +597,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // b) Обновление Epic (Epic нет в списке или у Epic нет Id)
     @Test
-    public void shouldNotUpdateSubtaskWithoutIdOrNotExistSubtask() {
+    public void shouldNotUpdateSubtaskWithoutIdOrNotExistSubtask() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
 
@@ -572,17 +606,23 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         final Subtask savedSubtask = manager.getSubtask(subtaskId);
 
         // 1. Попытка обновить Epic без указания Id
-        Subtask subtask1 = new Subtask(epicId,"TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
-        manager.updateSubtask(subtask1);
+        Subtask subtask1 = new Subtask(epicId, "TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
         assertEquals(savedSubtask, manager.getSubtask(subtaskId), "Subtask не равны");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.updateSubtask(subtask1));
+        assertEquals("Невозможно обновить подзадачу: не указан ID || подзадача отсутствует.", ex.getMessage());
 
         List<Task> subtaskAndEpicList = manager.getAllTasksList();
         assertEquals(2, subtaskAndEpicList.size(), "Неверное количество Subtask & Epic.");
 
         // 2. Попытка обновить не существующую задачу (нет такого Id)
-        Subtask subtask2 = new Subtask(3, epicId,"TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
-        manager.updateSubtask(subtask2);
-        assertNull(manager.getSubtask(3), "Subtask возвращается");
+        Subtask subtask2 = new Subtask(3, epicId, "TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
+
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getSubtask(3));
+        assertEquals(String.format("Сабтаска с ID: %s не существует", 3), ex1.getMessage());
+
+        IOException ex2 = assertThrows(IOException.class, () -> manager.updateSubtask(subtask2));
+        assertEquals("Невозможно обновить подзадачу: не указан ID || подзадача отсутствует.", ex2.getMessage());
 
         List<Task> subtaskAndEpicList1 = manager.getAllTasksList();
         assertEquals(2, subtaskAndEpicList1.size(), "Неверное количество Subtask & Epic.");
@@ -590,7 +630,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // d) Проверка изменения статуса и времени Epic при обновлении Subtask
     @Test
-    public void shouldChangeEpicStatusWhenSubtaskUpdated() {
+    public void shouldChangeEpicStatusWhenSubtaskUpdated() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -600,12 +640,12 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         assertEquals(TaskStatus.NEW, savedEpic.getStatus());
 
-        Subtask subtask1 = new Subtask(2,epicId,"TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
+        Subtask subtask1 = new Subtask(2, epicId, "TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
         manager.updateSubtask(subtask1);
 
         assertEquals(TaskStatus.IN_PROGRESS, savedEpic.getStatus(), "Не верный статус Epic");
 
-        Subtask subtask2 = new Subtask(2,epicId,"TestSubtask2", "Description", TaskStatus.DONE);
+        Subtask subtask2 = new Subtask(2, epicId, "TestSubtask2", "Description", TaskStatus.DONE);
         manager.updateSubtask(subtask2);
 
         assertEquals(TaskStatus.DONE, savedEpic.getStatus(), "Не верный статус Epic");
@@ -613,7 +653,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
     // e) Проверка времени Epic при добавлении Subtask
     @Test
-    public void shouldChangeEpicTimeWhenSubtaskUpdated() {
+    public void shouldChangeEpicTimeWhenSubtaskUpdated() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -646,8 +686,9 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     }
 
     // 2.6.1. Удаление Task по идентификатору
+    // a) Нормальные условия (Task существует)
     @Test
-    public void shouldDeleteTask () {
+    public void shouldDeleteTask() throws IOException {
         Task task = new Task(1, "TestTask", "Description", TaskStatus.NEW);
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
@@ -656,12 +697,28 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         manager.deleteTask(taskId);
         assertFalse(manager.getAllTasksList().contains(savedTask));
-        assertNull(manager.getTask(taskId), "Task is return");
+        IOException ex = assertThrows(IOException.class, () -> manager.getTask(taskId));
+        assertEquals(String.format("Задачи с ID: %s не существует", taskId), ex.getMessage());
+    }
+
+    // b) Исключительные условия (Task не существует)
+    @Test
+    public void shouldTrowIOExceptionIfDeleteTask() {
+        Task task1 = new Task(1, "TestTask", "Description", TaskStatus.NEW);
+
+        IOException ex = assertThrows(IOException.class, () -> manager.deleteTask(1));
+        assertEquals(String.format("Задачи с ID: %s не существует", 1), ex.getMessage());
+
+        assertFalse(manager.getAllTasksList().contains(task1), "TaskList contains Task");
+
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getTask(1));
+        assertEquals(String.format("Задачи с ID: %s не существует", 1), ex1.getMessage());
     }
 
     // 2.6.2. Удаление Epic по идентификатору
+    // a) Нормальные условия (Epic существует)
     @Test
-    public void shouldDeleteEpic () {
+    public void shouldDeleteEpic() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -669,13 +726,29 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         manager.deleteEpic(epicId);
         assertFalse(manager.getAllTasksList().contains(savedEpic), "Перечень содержит Epic");
-        assertNull(manager.getEpic(epicId), "Epic is return");
+
+        IOException ex = assertThrows(IOException.class, () -> manager.getEpic(epicId));
+        assertEquals(String.format("Эпика с ID: %s не существует", epicId), ex.getMessage());
+    }
+
+    // b) Исключительные условия (Epic не существует)
+    @Test
+    public void shouldTrowIOExceptionIfDeleteEpic() {
+        Epic epic = new Epic(1, "TestEpic", "Description", null);
+
+        IOException ex = assertThrows(IOException.class, () -> manager.deleteEpic(1));
+        assertEquals("Эпика с ID: 1 не существует", ex.getMessage());
+
+        assertFalse(manager.getAllTasksList().contains(epic), "TaskList contains Epic");
+
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getEpic(1));
+        assertEquals(String.format("Эпика с ID: %s не существует", 1), ex1.getMessage());
     }
 
     // 2.6.3. Удаление Subtask по идентификатору
     // a) Без проверок на изменения статуса и времени Epic
     @Test
-    public void shouldDeleteSubtask () {
+    public void shouldDeleteSubtask() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         manager.getEpic(epicId);
@@ -688,12 +761,13 @@ abstract public class TaskManagerTest<T extends TaskManager> {
 
         manager.deleteSubtask(subtaskId);
         assertFalse(manager.getAllTasksList().contains(savedSubtask), "Перечень содержит Subtask");
-        assertNull(manager.getSubtask(subtaskId), "Subtask is return");
+        IOException ex = assertThrows(IOException.class, () -> manager.getSubtask(subtaskId));
+        assertEquals(String.format("Сабтаска с ID: %s не существует", subtaskId), ex.getMessage());
     }
 
     // b) Проверка изменения статуса Epic при удалении Subtask
     @Test
-    public void shouldChangeEpicStatusWhenSubtaskDeleted() {
+    public void shouldChangeEpicStatusWhenSubtaskDeleted() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -704,7 +778,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         Subtask subtask1 = new Subtask(3, epicId, "TestSubtask1", "Description", TaskStatus.IN_PROGRESS);
         int subtaskId1 = manager.addSubtask(subtask1);
 
-        assertEquals(TaskStatus.IN_PROGRESS, savedEpic.getStatus(),"Не верный статус Epic");
+        assertEquals(TaskStatus.IN_PROGRESS, savedEpic.getStatus(), "Не верный статус Epic");
 
         manager.deleteSubtask(subtaskId1);
         assertEquals(TaskStatus.DONE, savedEpic.getStatus(), "Не верный статус Epic");
@@ -713,10 +787,9 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertEquals(TaskStatus.NEW, savedEpic.getStatus(), "Не верный статус Epic");
     }
 
-
     // c) Проверка изменения времени Epic при удалении Subtask
     @Test
-    public void shouldChangeEpicTimeWhenSubtaskRemove() {
+    public void shouldChangeEpicTimeWhenSubtaskRemove() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -744,9 +817,26 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         assertNull(savedEpic.getEndTime(), "Время окончания Epic установлено");
     }
 
+    // d) Исключительные условия (Subtask не существует)
+    @Test
+    public void shouldTrowIOExceptionIfDeleteSubtask() throws IOException {
+        Epic epic = new Epic(1, "TestEpic", "Description", null);
+        manager.addEpic(epic);
+
+        Subtask subtask = new Subtask(2, 1, "TestSubtask", "Description", TaskStatus.DONE);
+
+        IOException ex = assertThrows(IOException.class, () -> manager.deleteSubtask(1));
+        assertEquals("Подзадачи с ID: 1 не существует", ex.getMessage());
+
+        assertFalse(manager.getAllTasksList().contains(subtask), "TaskList contains Subtask");
+
+        IOException ex1 = assertThrows(IOException.class, () -> manager.getSubtask(1));
+        assertEquals(String.format("Сабтаска с ID: %s не существует", 1), ex1.getMessage());
+    }
+
     // 3.1. Получение списка подзадач для эпика.
     @Test
-    public void shouldReturnEpicsList () {
+    public void shouldReturnEpicsList() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         manager.getEpic(epicId);
@@ -759,12 +849,13 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         int subtaskId1 = manager.addSubtask(subtask1);
         Subtask savedSubtask1 = manager.getSubtask(subtaskId1);
 
-        List <Task> subtaskList = manager.getAllTasksList();
+        List<Task> subtaskList = manager.getAllTasksList();
         assertFalse(subtaskList.isEmpty(), "SubtaskList is empty");
-        assertEquals(3, subtaskList.size()," Incorrect task qty. in SubtaskList" );
+        assertEquals(3, subtaskList.size(), " Incorrect task qty. in SubtaskList");
         assertTrue(subtaskList.contains(savedSubtask), "SubtaskList doesn't contain Subtask");
         assertTrue(subtaskList.contains(savedSubtask1), "SubtaskList doesn't contain Subtask1");
     }
+
     @Test
     public void shouldGenerateNewId() {
         int id1 = manager.generateNewId();
@@ -776,7 +867,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void shouldReturnHistory () {
+    public void shouldReturnHistory() throws IOException {
         Epic epic = new Epic(1, "TestEpic", "Description", null);
         final int epicId = manager.addEpic(epic);
         final Epic savedEpic = manager.getEpic(epicId);
@@ -793,9 +884,9 @@ abstract public class TaskManagerTest<T extends TaskManager> {
         final int taskId = manager.addTask(task);
         final Task savedTask = manager.getTask(taskId);
 
-        List <Task> historyList = manager.history();
+        List<Task> historyList = manager.history();
         assertFalse(historyList.isEmpty(), "HistoryList is empty");
-        assertEquals(4, historyList.size()," HistoryList qty. in HistoryList" );
+        assertEquals(4, historyList.size(), " HistoryList qty. in HistoryList");
         assertTrue(historyList.contains(savedEpic), "HistoryList doesn't contain Epic");
         assertTrue(historyList.contains(savedSubtask), "HistoryList doesn't contain Subtask");
         assertTrue(historyList.contains(savedSubtask1), "HistoryList doesn't contain Subtask1");
@@ -803,8 +894,7 @@ abstract public class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void shouldReturnTrueIfTasksCrossingByTime () {
-
+    public void shouldReturnTrueIfTasksCrossingByTime() throws IOException {
         Task task1 = new Task("TestTask", "Description", TaskStatus.NEW);
         task1.setStartTime(LocalDateTime.of(2022, 4, 11, 13, 45));
         task1.setDuration(Duration.ofDays(10));
